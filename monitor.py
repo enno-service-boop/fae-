@@ -3,10 +3,6 @@
 """
 網站監控系統 v2.0
 功能：HTTP狀態檢查、內容關鍵字驗證、SSL憑證到期檢查、自動告警
-特性：
-1. 為特定域名 (ghgwatch.tpark.com.tw) 安全繞過SSL驗證，其他網站嚴格檢查。
-2. 配置載入優先順序：環境變數 > config.json 檔案，兼顧CI/CD與本地開發。
-3. 內建重試機制與連線診斷。
 """
 
 import json
@@ -58,7 +54,7 @@ def load_config():
         'smtp_server': os.getenv('SMTP_SERVER'),
         'smtp_port': os.getenv('SMTP_PORT'),
         'sender_email': os.getenv('SENDER_EMAIL'),
-        'sender_password': os.getenv('SENDER_PASSWORD'),
+        'sender_password': os.getenv('  '),
     }
     for key in sensitive_keys:
         env_value = env_mapping[key]
@@ -83,21 +79,7 @@ def load_config():
 # ========== 核心檢查函式 ==========
 
 def check_website_with_retry(url: str, timeout: int, verify_ssl: bool = True, retries: int = 2) -> Dict[str, Any]:
-    """
-    檢查網站狀態，內建重試機制。
-    
-    針對特定域名 (ghgwatch.tpark.com.tw) 關閉 SSL 驗證以相容 TWCA 憑證。
-    此為明確的風險接受決策，僅因目標伺服器為已知且受信賴的內部服務。
-    
-    Args:
-        url: 要檢查的網址。
-        timeout: 單次嘗試的逾時時間（秒）。
-        verify_ssl: 是否驗證 SSL 憑證。若為 False，將為所有請求停用驗證。
-        retries: 失敗後的重試次數。
-        
-    Returns:
-        包含檢查結果的字典。
-    """
+
     parsed_url = urlparse(url)
     hostname = parsed_url.hostname
     
@@ -447,6 +429,20 @@ def main():
     print("功能：連線狀態 | 內容驗證 | SSL憑證 | 自動告警")
     print("=" * 60)
     
+    # ===== 核心修改開始：環境檢測 =====
+    # 檢測是否在 GitHub Actions 環境中運行
+    # GitHub Actions 會自動設定 'GITHUB_ACTIONS' 環境變數為 'true'
+    is_github_actions = os.getenv('GITHUB_ACTIONS') == 'true'
+    
+    if is_github_actions:
+        print("⚙️  偵測到 GitHub Actions 環境，執行模式：單次檢查")
+        print("   • 腳本將執行一輪完整檢查後自動結束。")
+        print("   • 下次檢查將由 GitHub 的排程觸發新任務。")
+    else:
+        print("⚙️  本地環境，執行模式：持續監控循環")
+    print("=" * 60)
+    # ===== 核心修改結束 =====
+    
     try:
         # 載入配置
         config = load_config()
@@ -454,7 +450,17 @@ def main():
         targets = config['targets']
         
         print(f"📋 載入 {len(targets)} 個監控目標")
-        print(f"⏱  監控間隔: {global_settings['monitor_interval_seconds']} 秒")
+        
+        # ===== 核心修改：解釋監控間隔 =====
+        # 在 GitHub Actions 中，我們會忽略配置檔中的間隔，因為只跑一次。
+        # 但日誌仍顯示原始配置值以供參考。
+        original_interval = global_settings['monitor_interval_seconds']
+        if is_github_actions:
+            print(f"⏱  配置監控間隔: {original_interval} 秒 (在 GitHub Actions 中將被忽略，僅執行一次)")
+        else:
+            print(f"⏱  監控間隔: {original_interval} 秒")
+        # ===== 核心修改結束 =====
+        
         print(f"🔧 SMTP 伺服器: {global_settings['smtp_server']}:{global_settings['smtp_port']}")
         print("=" * 60)
         
@@ -516,11 +522,19 @@ def main():
                     if send_alert_email(alert_subject, alert_body, alert_recipients, global_settings):
                         alert_cooldown[site_name] = datetime.datetime.now()
             
-            # 等待下一輪檢查
+            # ===== 核心修改：決定是否繼續循環 =====
+            # 如果在 GitHub Actions 環境，執行一輪後立即退出循環
+            if is_github_actions:
+                print(f"\n✅ GitHub Actions 單次檢查任務完成。程式即將退出。")
+                print("=" * 60)
+                break  # 跳出 while 循環，程式結束
+            
+            # 否則（本地環境）：等待設定的間隔後繼續下一輪
             interval = global_settings['monitor_interval_seconds']
             print(f"\n⏳ 本輪檢查完成。等待 {interval} 秒後繼續...")
             print("-" * 60)
             time.sleep(interval)
+            # ===== 核心修改結束 =====
             
     except KeyboardInterrupt:
         print("\n\n🛑 監控程式被手動停止。")
