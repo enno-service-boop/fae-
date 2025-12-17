@@ -13,8 +13,8 @@
         {
             "name": "遠資溫盤",
             "url": "https://ghgwatch.tpark.com.tw",
-            "check_ssl": true,
-            "verify_ssl": true,
+            "check_ssl": false,
+            "verify_ssl": false,
             "expected_status": 200,
             "expected_text": "溫室氣體盤查平台",
             "max_response_time_ms": 3000,
@@ -77,4 +77,5 @@
             "alert_emails": ["ben.liu@ennowell.com"]
         }
     ]
+
 }
