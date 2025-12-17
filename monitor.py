@@ -54,7 +54,7 @@ def load_config():
         'smtp_server': os.getenv('SMTP_SERVER'),
         'smtp_port': os.getenv('SMTP_PORT'),
         'sender_email': os.getenv('SENDER_EMAIL'),
-        'sender_password': os.getenv('  '),
+        'sender_password': os.getenv('SENDER_PASSWORD'),
     }
     for key in sensitive_keys:
         env_value = env_mapping[key]
