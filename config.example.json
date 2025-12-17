@@ -1,0 +1,80 @@
+{
+    "global_settings": {
+        "monitor_interval_seconds": 600,
+        "timeout_seconds": 30,
+        "ssl_warning_days": 30,
+        "max_response_time_ms": 5000,
+        "smtp_server": "your_smtp_server.com",
+        "smtp_port": 587,
+        "sender_email": "your_email@example.com",
+        "sender_password": "" 
+    },
+    "targets": [
+        {
+            "name": "遠資溫盤",
+            "url": "https://ghgwatch.tpark.com.tw",
+            "check_ssl": true,
+            "verify_ssl": true,
+            "expected_status": 200,
+            "expected_text": "溫室氣體盤查平台",
+            "max_response_time_ms": 3000,
+            "retries": 2,
+            "alert_emails": ["ben.liu@ennowell.com","susan.nien@ennowell.com"]
+        },
+        {
+            "name": "溫盤雲端站",
+            "url": "https://ghg.ennowell.com/",
+            "check_ssl": true,
+            "verify_ssl": true,
+            "expected_status": 200,
+            "expected_text": "溫室氣體盤查平台",
+            "max_response_time_ms": 3000,
+            "retries": 1,
+            "alert_emails": ["ben.liu@ennowell.com","susan.nien@ennowell.com"]
+        },
+        {
+            "name": "溫盤DEMO站",
+            "url": "https://ghg-demo.ew-demo.com",
+            "check_ssl": true,
+            "verify_ssl": true,
+            "expected_status": 200,
+            "expected_text": "溫室氣體盤查平台",
+            "max_response_time_ms": 3000,
+            "retries": 1,
+            "alert_emails": ["ben.liu@ennowell.com","susan.nien@ennowell.com"]
+        },
+        {
+            "name": "碳盤雲端站",
+            "url": "https://cfv.ennowell.com",
+            "check_ssl": true,
+            "verify_ssl": true,
+            "expected_status": 200,
+            "expected_text": "產品碳足跡計算平台",
+            "max_response_time_ms": 3000,
+            "retries": 1,
+            "alert_emails": ["ben.liu@ennowell.com","susan.nien@ennowell.com"]
+        },
+        {
+            "name": "碳盤DEMO站",
+            "url": "https://cfv.ew-demo.com",
+            "check_ssl": true,
+            "verify_ssl": true,
+            "expected_status": 200,
+            "expected_text": "產品碳足跡計算平台",
+            "max_response_time_ms": 3000,
+            "retries": 1,
+            "alert_emails": ["ben.liu@ennowell.com","susan.nien@ennowell.com"]
+        },
+        {
+            "name": "溫碳客服站",
+            "url": "https://esg-service.ennowell.com",
+            "check_ssl": true,
+            "verify_ssl": true,
+            "expected_status": 200,
+            "expected_text": "ESG客服",
+            "max_response_time_ms": 3000,
+            "retries": 1,
+            "alert_emails": ["ben.liu@ennowell.com"]
+        }
+    ]
+}
