@@ -1,0 +1,44 @@
+name: Website Monitor - 網站監控任務
+
+on:
+  # 1. 定時觸發：這是核心。GitHub 會根據此 cron 表達式自動啟動任務。
+  #    以下範例為每 15 分鐘執行一次 (在每小時的 0, 15, 30, 45 分)。
+  schedule:
+    - cron: '*/15 * * * *'
+  
+  # 2. 手動觸發：方便你在 GitHub 網頁上隨時點擊按鈕進行一次測試。
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    name: 執行網站監控檢查
+    runs-on: ubuntu-latest
+
+    steps:
+      # 步驟 1: 獲取專案程式碼
+      - name: 檢出程式碼
+        uses: actions/checkout@v4
+
+      # 步驟 2: 設定 Python 環境
+      - name: 設定 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 步驟 3: 安裝依賴套件 (你的 requirements.txt 清單)
+      - name: 安裝 Python 依賴
+        run: |
+          pip install requests
+
+      # 步驟 4: 執行監控腳本
+      - name: 執行監控程式
+        # 關鍵：透過 env 將 GitHub Secrets 安全地注入為環境變數。
+        # 這些變數將被你的 load_config() 函式優先讀取。
+        env:
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          # 你可以選擇在 Secrets 中覆蓋其他全域設定（如間隔），或在 config.example.json 中設定
+          MONITOR_INTERVAL: '300' # 此處的間隔僅用於腳本內等待，在一次性任務中可設為 >= 排程間隔
+        run: python monitor.py
